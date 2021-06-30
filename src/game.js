@@ -155,6 +155,14 @@ class Game {
     if (event.code === 'Space') {
       this.tryToDrop();
     }
+
+    if (event.code === 'KeyP') {
+      if (this.state === GAME_STATE.PAUSED) {
+        this.startGame();
+      } else {
+        this.pause();
+      }
+    }
   }
 
   tryToMoveLeft() {
