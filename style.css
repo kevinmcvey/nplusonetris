@@ -10,7 +10,7 @@ body {
 }
 
 canvas {
-    position: relative;
+    position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
@@ -53,6 +53,7 @@ canvas {
     /* stacked vertically combines top and bottom border to 2px */
     border-top-width: 1px;
     border-bottom-width: 1px;
+    position: relative;
 }
 
 .divbutton-body {
@@ -93,7 +94,7 @@ canvas {
         display: relative makes absolutely positioned
         children position relative to this element
     */
-    display: relative;
+    position: relative;
 }
 
 .layout-right {
@@ -102,6 +103,7 @@ canvas {
     justify-content: center;
     align-items: center;
     flex: 1;
+    position: relative;
 }
 
 #title-wrapper {

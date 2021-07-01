@@ -133,6 +133,7 @@ class Game {
       this.painter.initialize();
       this.paintBoard();
       this.paintPiece();
+      this.paintNextPiece();
     });
   }
 
@@ -249,28 +250,23 @@ class Game {
     this.stopGameLoop = window.requestAnimationFrame(this.gameLoop.bind(this));
 
 
-    const nextTick = this.lastStep + this.tickLength;
+    const nextStepTime = this.lastStepTime + REFRESH_RATE_MS;
     let numTicks = 0;
 
-    if (tFrame > nextTick) {
+    if (tFrame > nextStepTime) {
       this.step();
-      this.lastStep = tFrame;
+      this.lastStepTime = tFrame;
     }
-  }
-
-  setupGameLoop() {
-    this.lastStep = performance.now();
-    this.tickLength = REFRESH_RATE_MS; // 1000ms
   }
 
   startGame() {
     this.state = GAME_STATE.RUNNING;
 
-    if (!this.piece) {
-      this.spawnPiece();
-    }
+    // always spawn a new piece when starting game
+    this.spawnPiece();
 
-    this.setupGameLoop();
+
+    this.lastStepTime = performance.now();  
     // begin gameLoop - it calls itself using requestAnimationFrame which uses the time from
     // performance.now() - so pass that here to start things off
     this.gameLoop(performance.now());
@@ -324,8 +320,10 @@ class Game {
   }
 
   spawnPiece() {
-    this.piece = this.pieceFactory.createPiece();
+    this.piece = Boolean(this.nextPiece) ? this.nextPiece : this.pieceFactory.createPiece();
+    this.nextPiece = this.pieceFactory.createPiece();
     this.paintPiece();
+    this.paintNextPiece();
   }
   
   /**
@@ -394,6 +392,14 @@ class Game {
     }
 
     this.painter.paintPiece(this.piece);
+  }
+
+  paintNextPiece() {
+    if (!this.nextPiece) {
+      return;
+    }
+    this.painter.eraseInfoCanvas();
+    this.painter.paintNextPiece(this.nextPiece)
   }
 
   takeOwnershipOfPiece() {

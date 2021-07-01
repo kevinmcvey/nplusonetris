@@ -2,7 +2,7 @@
 
 // Keep these values larger than the button width and title height in style.css
 const X_BUFFER_PERCENT = 20;
-const Y_BUFFER_PX = 50;
+const Y_PADDING = 50;
 
 const CANVAS = {
   FOREGROUND: 'FOREGROUND',
@@ -52,16 +52,17 @@ class BoardPainter {
   }
 
   initialize() {
-    this.resizeCanvasToFillWindow(CANVAS.FOREGROUND);
-    this.resizeCanvasToFillWindow(CANVAS.BACKGROUND);
-    this.resizeCanvasToFillWindow(CANVAS.INFO);
+    this.resizeCanvasToFillParent(CANVAS.FOREGROUND);
+    this.resizeCanvasToFillParent(CANVAS.BACKGROUND);
+    this.resizeCanvasToFillParent(CANVAS.INFO);
 
-    this.localizeBoard(CANVAS.FOREGROUND);
+    this.localizeBoard();
+
 
     this.drawGrid(CANVAS.BACKGROUND);
   }
 
-  resizeCanvasToFillWindow(canvasName) {
+  resizeCanvasToFillParent(canvasName) {
     const canvas = this.canvas(canvasName);
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
@@ -72,25 +73,28 @@ class BoardPainter {
   // a bunch of other elements that limit the space where it makes sense to paint the game board.
   //
   // ... So in other words, the canvas should just be resized and positioned using CSS. Ah well.
-  localizeBoard(canvasName) {
-    const canvas = this.canvas(canvasName);
+  localizeBoard() {
+    const canvas = this.canvas(CANVAS.FOREGROUND);
 
-    const x_buffer_px = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
+    const x_padding = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
 
-    const maxWidth = (canvas.width - (x_buffer_px * 2)) / this.columns;
-    const maxHeight = (canvas.height - (Y_BUFFER_PX * 2)) / this.rows;
+    const squareWidth = (canvas.width - (x_padding * 2)) / this.columns;
+    const squareHeight = (canvas.height - (Y_PADDING * 2)) / this.rows;
 
-    if (maxHeight < maxWidth) {
-      this.squareSize = maxHeight;
+    const board = {};
+
+    if (squareHeight < squareWidth) {
+      this.squareSize = squareHeight;
 
       this.boardX = (canvas.width - (this.squareSize * this.columns)) / 2.0;
-      this.boardY = Y_BUFFER_PX;
+      this.boardY = Y_PADDING;
     } else {
-      this.squareSize = maxWidth;
+      this.squareSize = squareWidth;
 
-      this.boardX = x_buffer_px;
+      this.boardX = x_padding;
       this.boardY = (canvas.height - (this.squareSize * this.rows)) / 2.0;
     }
+
   }
 
   boardToWorld(point) {
@@ -98,6 +102,34 @@ class BoardPainter {
       x: this.boardX + (point.x * this.squareSize),
       y: this.boardY + (point.y * this.squareSize)
     };
+  }
+
+  /**
+   * todo: center entire piece in info view
+   */
+  infoBoardToWorld(pixel) {
+    const canvas = this.canvas(CANVAS.INFO);
+    const x_padding = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
+    const y_padding = canvas.parentElement.clientHeight * (X_BUFFER_PERCENT / 100);
+
+    const maxBoardWidth = canvas.parentElement.clientWidth - (x_padding * 2);
+    const maxBoardHeight = canvas.parentElement.clientHeight - (y_padding * 2);
+
+    let boardX;
+    let boardY;
+
+    const scaledSquareSize = maxBoardWidth / this.columns;
+  
+    const squareSize = scaledSquareSize < this.squareSize ? scaledSquareSize : this.squareSize;
+
+    // debugger;
+    return {
+      x: x_padding + (pixel.x * squareSize),
+      y: y_padding + (pixel.y * squareSize),
+      width: squareSize,
+      height: squareSize
+    }
+
   }
 
   pixelToWorldRect(pixel) {
@@ -192,7 +224,29 @@ class BoardPainter {
   }
 
   paintPiece(piece) {
-    this.paintPixels(piece.pixels, piece.x, piece.y, CANVAS.FOREGROUND);
+    this.paintPixels(piece.pixels, piece.x, piece.y);
+  }
+
+  paintNextPiece(piece) {
+    const ctx = this.context(CANVAS.INFO);
+
+    this.forActivePixels(piece.pixels, (pixelX, pixelY) => {
+      const rect = this.infoBoardToWorld({ x: piece.x + pixelX, y: piece.y + pixelY }, piece.rank);
+      ctx.fillStyle = this.getColor(piece.pixels[pixelY][pixelX]);
+      ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+      return true;
+    });
+  }
+
+  eraseCanvas(canvasName) {
+    const canvas = this.canvas(canvasName);
+    const ctx = this.context(canvasName);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  eraseInfoCanvas() {
+    this.eraseCanvas(CANVAS.INFO);
   }
 
   eraseBoard(board) {
