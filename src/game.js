@@ -239,6 +239,25 @@ class Game {
     this.startGame();
   }
 
+
+  gameLoop(tFrame) {
+    this.stopGameLoop = window.requestAnimationFrame(this.gameLoop.bind(this));
+
+
+    const nextTick = this.lastStep + this.tickLength;
+    let numTicks = 0;
+
+    if (tFrame > nextTick) {
+      this.step();
+      this.lastStep = tFrame;
+    }
+  }
+
+  setupGameLoop() {
+    this.lastStep = performance.now();
+    this.tickLength = REFRESH_RATE_MS; // 1000ms
+  }
+
   startGame() {
     this.state = GAME_STATE.RUNNING;
 
@@ -246,13 +265,15 @@ class Game {
       this.spawnPiece();
     }
 
-    this.refreshProcessId = setInterval(() => {
-      this.step();
-    }, REFRESH_RATE_MS);
+    this.setupGameLoop();
+    // begin gameLoop - it calls itself using requestAnimationFrame which uses the time from
+    // performance.now() - so pass that here to start things off
+    this.gameLoop(performance.now());
   }
 
   pause() {
-    clearInterval(this.refreshProcessId);
+    // clearInterval(this.refreshProcessId);
+    window.cancelAnimationFrame(this.stopGameLoop)
 
     this.state = GAME_STATE.PAUSED;
   }
@@ -301,7 +322,11 @@ class Game {
     this.piece = this.pieceFactory.createPiece();
     this.paintPiece();
   }
-
+  
+  /**
+   * A valid piece is one where all pixels within the piece
+   * can be spawned in bounds and not overlapping another piece
+   */
   isValidPiece(piece) {
     let valid = true;
 
