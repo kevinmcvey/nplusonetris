@@ -7,6 +7,7 @@ const Y_BUFFER_PX = 50;
 const CANVAS = {
   FOREGROUND: 'FOREGROUND',
   BACKGROUND: 'BACKGROUND',
+  INFO: 'INFO',
 };
 
 // Colors extracted from the Crayola Color list at:
@@ -35,15 +36,17 @@ const DEFAULT_COLOR = '#C39953'; // Aztec Gold
 // pieces should be drawn to the foreground canvas. The background should, more or less, be
 // static from start to finish.
 class BoardPainter {
-  constructor(columns, rows, backgroundCanvas, foregroundCanvas) {
+  constructor(columns, rows, backgroundCanvas, foregroundCanvas, infoCanvas) {
     this.columns = columns;
     this.rows = rows;
 
     this.backgroundCanvas = backgroundCanvas;
     this.foregroundCanvas = foregroundCanvas;
+    this.infoCanvas = infoCanvas;
 
     this.bgctx = this.backgroundCanvas.getContext('2d');
     this.fgctx = this.foregroundCanvas.getContext('2d');
+    this.infoctx = this.infoCanvas.getContext('2d');
 
     this.initialize();
   }
@@ -51,6 +54,7 @@ class BoardPainter {
   initialize() {
     this.resizeCanvasToFillWindow(CANVAS.FOREGROUND);
     this.resizeCanvasToFillWindow(CANVAS.BACKGROUND);
+    this.resizeCanvasToFillWindow(CANVAS.INFO);
 
     this.localizeBoard(CANVAS.FOREGROUND);
 
@@ -59,9 +63,8 @@ class BoardPainter {
 
   resizeCanvasToFillWindow(canvasName) {
     const canvas = this.canvas(canvasName);
-
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
   }
 
   // I originally build localizeBoard to center the tetris board in a `<canvas>` that filled
@@ -205,6 +208,8 @@ class BoardPainter {
       return this.foregroundCanvas;
     } else if (name === CANVAS.BACKGROUND) {
       return this.backgroundCanvas;
+    } else if (name === CANVAS.INFO) {
+      return this.infoCanvas;
     }
 
     throw Error(`No canvas named ${name}`);
@@ -215,6 +220,8 @@ class BoardPainter {
       return this.fgctx;
     } else if (name === CANVAS.BACKGROUND) {
       return this.bgctx;
+    } else if (name === CANVAS.INFO) {
+      return this.infoctx;
     }
 
     throw Error(`No context for canvas named ${name}`);

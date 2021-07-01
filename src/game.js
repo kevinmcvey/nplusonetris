@@ -24,7 +24,12 @@ class Game {
     this.isMobile = false;
 
     this.painter = new BoardPainter(
-      columns, rows, canvases.backgroundCanvas, canvases.foregroundCanvas);
+      columns,
+      rows,
+      canvases.backgroundCanvas,
+      canvases.foregroundCanvas,
+      canvases.infoCanvas
+    );
 
     this.piece = undefined;
     this.pieceFactory = new PieceFactory(startingRank, this.columns);
