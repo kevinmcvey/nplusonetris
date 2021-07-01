@@ -164,6 +164,7 @@ class Game {
 
     if (event.code === 'KeyP') {
       if (this.state === GAME_STATE.PAUSED) {
+        // todo - thihs spawns another piece when it should just resume
         this.startGame();
       } else {
         this.pause();
