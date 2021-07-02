@@ -95,9 +95,16 @@ canvas {
         children position relative to this element
     */
     position: relative;
+    /*
+        https://developer.mozilla.org/en-US/docs/Web/CSS/isolation
+        This gives the .layout-center element it's own stacking context
+        so that child elements that set z-indexes are relative to one another
+        and not a part of global z-index stacking context.
+    */
     isolation: isolate;
 }
 
+/* When game paused, .paused class is added to body element */
 .paused .layout-center::after {
     position: absolute;
     content: '';
@@ -155,6 +162,7 @@ canvas {
     }
   }
 
+/* When game paused, .paused class is added to body element */
 .paused #pause-wrapper {
     display: block;
     animation: 2s linear infinite condemned_blink_effect;
