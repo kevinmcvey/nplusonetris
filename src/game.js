@@ -284,7 +284,7 @@ class Game {
 
   stopGame() {
     window.cancelAnimationFrame(this.stopGameLoop)
-    this.state = GAME_STATE.END;
+    this.state = GAME_STATE.MENU;
   }
 
   runGame() {
