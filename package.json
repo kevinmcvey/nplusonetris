@@ -15,6 +15,6 @@
   "dependencies": {},
   "scripts": {
     "build": "grunt",
-    "build:watch": "grunt --watch"
+    "build:watch": "grunt watch"
   }
 }

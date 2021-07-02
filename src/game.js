@@ -10,6 +10,8 @@ const Tutorial = require('./tutorial');
 const GAME_STATE = {
   RUNNING: 'RUNNING',
   PAUSED: 'PAUSED',
+  TUTORIAL: 'TUTORIAL',
+  MENU: 'MENU',
 };
 
 const REFRESH_RATE_MS = 1.0 * 1000;
@@ -19,7 +21,7 @@ class Game {
   constructor(columns, rows, startingRank, canvases, feedback, controls, tutorial) {
     this.columns = columns;
     this.rows = rows;
-    this.state = GAME_STATE.PAUSED;
+    this.state = GAME_STATE.MENU;
 
     this.isMobile = false;
 
@@ -142,32 +144,40 @@ class Game {
   }
 
   handleKeypress(event) {
-    if (event.code === 'ArrowLeft') {
-      this.tryToMoveLeft();
+
+    if (this.state === GAME_STATE.RUNNING) {
+      if (event.code === 'ArrowLeft') {
+        this.tryToMoveLeft();
+      }
+
+      if (event.code === 'ArrowRight') {
+        this.tryToMoveRight();
+      }
+
+      if (event.code === 'ArrowDown') {
+        this.tryToMoveDown();
+      }
+
+      if (event.code === 'ArrowUp') {
+        this.tryToRotate();
+      }
+
+      if (event.code === 'Space') {
+        this.tryToDrop();
+      }
     }
 
-    if (event.code === 'ArrowRight') {
-      this.tryToMoveRight();
-    }
-
-    if (event.code === 'ArrowDown') {
-      this.tryToMoveDown();
-    }
-
-    if (event.code === 'ArrowUp') {
-      this.tryToRotate();
-    }
-
-    if (event.code === 'Space') {
-      this.tryToDrop();
+    if (this.state === GAME_STATE.MENU) {
+      if (event.code === 'Space') {
+        this.tryToStart();
+      }
     }
 
     if (event.code === 'KeyP') {
       if (this.state === GAME_STATE.PAUSED) {
-        // todo - thihs spawns another piece when it should just resume
-        this.startGame();
-      } else {
-        this.pause();
+        this.runGame();
+      } else if (this.state === GAME_STATE.RUNNING) {
+        this.pauseGame();
       }
     }
   }
@@ -261,23 +271,31 @@ class Game {
   }
 
   startGame() {
-    this.state = GAME_STATE.RUNNING;
-
     // always spawn a new piece when starting game
     this.spawnPiece();
+    this.runGame();
+  }
 
+  pauseGame() {
+    window.cancelAnimationFrame(this.stopGameLoop)
+    document.querySelector('body').classList.add('paused');
+    this.state = GAME_STATE.PAUSED;
+  }
+
+  stopGame() {
+    window.cancelAnimationFrame(this.stopGameLoop)
+    this.state = GAME_STATE.END;
+  }
+
+  runGame() {
+    this.state = GAME_STATE.RUNNING;
+
+    document.querySelector('body').classList.remove('paused');
 
     this.lastStepTime = performance.now();  
     // begin gameLoop - it calls itself using requestAnimationFrame which uses the time from
     // performance.now() - so pass that here to start things off
     this.gameLoop(performance.now());
-  }
-
-  pause() {
-    // clearInterval(this.refreshProcessId);
-    window.cancelAnimationFrame(this.stopGameLoop)
-
-    this.state = GAME_STATE.PAUSED;
   }
 
   // Do we need a new piece?
@@ -482,11 +500,12 @@ class Game {
   }
 
   playTutorial() {
+    this.state = GAME_STATE.TUTORIAL;
     this.tutorial.play();
   }
 
   gameOver() {
-    this.pause();
+    this.stopGame();
     this.feedback.gameOver();
     this.revealStartButton();
   }

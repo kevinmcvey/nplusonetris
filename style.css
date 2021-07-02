@@ -95,6 +95,18 @@ canvas {
         children position relative to this element
     */
     position: relative;
+    isolation: isolate;
+}
+
+.paused .layout-center::after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(204, 204, 204, 0.25);
+    z-index: 4;
 }
 
 .layout-right {
@@ -115,6 +127,37 @@ canvas {
     text-align: center;
     font-family: 'VT323', monospace;
     font-size: 32px;
+}
+
+#pause-wrapper {
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    width: 100%;
+    height: 40px;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    font-size: 32px;
+
+    display: none;
+}
+
+/* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/blink#css_polyfill */
+@keyframes condemned_blink_effect {
+    0% {
+      visibility: visible;
+    }
+    50% {
+      visibility: hidden;
+    }
+    100% {
+      visibility: hidden;
+    }
+  }
+
+.paused #pause-wrapper {
+    display: block;
+    animation: 2s linear infinite condemned_blink_effect;
 }
 
 #score-wrapper {
