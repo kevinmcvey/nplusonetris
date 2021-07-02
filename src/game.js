@@ -59,6 +59,7 @@ class Game {
 
     // Let the first game cycle create the first piece
     this.piece = undefined;
+    this.nextPiece = undefined;
 
     // Return to the starting game rank
     this.pieceFactory.reset();
