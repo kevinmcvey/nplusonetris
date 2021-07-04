@@ -10,6 +10,8 @@ const Tutorial = require('./tutorial');
 const GAME_STATE = {
   RUNNING: 'RUNNING',
   PAUSED: 'PAUSED',
+  TUTORIAL: 'TUTORIAL',
+  MENU: 'MENU',
 };
 
 const REFRESH_RATE_MS = 1.0 * 1000;
@@ -19,12 +21,17 @@ class Game {
   constructor(columns, rows, startingRank, canvases, feedback, controls, tutorial) {
     this.columns = columns;
     this.rows = rows;
-    this.state = GAME_STATE.PAUSED;
+    this.state = GAME_STATE.MENU;
 
     this.isMobile = false;
 
     this.painter = new BoardPainter(
-      columns, rows, canvases.backgroundCanvas, canvases.foregroundCanvas);
+      columns,
+      rows,
+      canvases.backgroundCanvas,
+      canvases.foregroundCanvas,
+      canvases.infoCanvas
+    );
 
     this.piece = undefined;
     this.pieceFactory = new PieceFactory(startingRank, this.columns);
@@ -52,6 +59,7 @@ class Game {
 
     // Let the first game cycle create the first piece
     this.piece = undefined;
+    this.nextPiece = undefined;
 
     // Return to the starting game rank
     this.pieceFactory.reset();
@@ -128,6 +136,7 @@ class Game {
       this.painter.initialize();
       this.paintBoard();
       this.paintPiece();
+      this.paintNextPiece();
     });
   }
 
@@ -136,31 +145,40 @@ class Game {
   }
 
   handleKeypress(event) {
-    if (event.code === 'ArrowLeft') {
-      this.tryToMoveLeft();
+
+    if (this.state === GAME_STATE.RUNNING) {
+      if (event.code === 'ArrowLeft') {
+        this.tryToMoveLeft();
+      }
+
+      if (event.code === 'ArrowRight') {
+        this.tryToMoveRight();
+      }
+
+      if (event.code === 'ArrowDown') {
+        this.tryToMoveDown();
+      }
+
+      if (event.code === 'ArrowUp') {
+        this.tryToRotate();
+      }
+
+      if (event.code === 'Space') {
+        this.tryToDrop();
+      }
     }
 
-    if (event.code === 'ArrowRight') {
-      this.tryToMoveRight();
-    }
-
-    if (event.code === 'ArrowDown') {
-      this.tryToMoveDown();
-    }
-
-    if (event.code === 'ArrowUp') {
-      this.tryToRotate();
-    }
-
-    if (event.code === 'Space') {
-      this.tryToDrop();
+    if (this.state === GAME_STATE.MENU) {
+      if (event.code === 'Space') {
+        this.tryToStart();
+      }
     }
 
     if (event.code === 'KeyP') {
       if (this.state === GAME_STATE.PAUSED) {
-        this.startGame();
-      } else {
-        this.pause();
+        this.runGame();
+      } else if (this.state === GAME_STATE.RUNNING) {
+        this.pauseGame();
       }
     }
   }
@@ -239,22 +257,46 @@ class Game {
     this.startGame();
   }
 
-  startGame() {
-    this.state = GAME_STATE.RUNNING;
 
-    if (!this.piece) {
-      this.spawnPiece();
-    }
+  gameLoop(tFrame) {
+    this.stopGameLoop = window.requestAnimationFrame(this.gameLoop.bind(this));
 
-    this.refreshProcessId = setInterval(() => {
+
+    const nextStepTime = this.lastStepTime + REFRESH_RATE_MS;
+    let numTicks = 0;
+
+    if (tFrame > nextStepTime) {
       this.step();
-    }, REFRESH_RATE_MS);
+      this.lastStepTime = tFrame;
+    }
   }
 
-  pause() {
-    clearInterval(this.refreshProcessId);
+  startGame() {
+    // always spawn a new piece when starting game
+    this.spawnPiece();
+    this.runGame();
+  }
 
+  pauseGame() {
+    window.cancelAnimationFrame(this.stopGameLoop)
+    document.querySelector('body').classList.add('paused');
     this.state = GAME_STATE.PAUSED;
+  }
+
+  stopGame() {
+    window.cancelAnimationFrame(this.stopGameLoop)
+    this.state = GAME_STATE.MENU;
+  }
+
+  runGame() {
+    this.state = GAME_STATE.RUNNING;
+
+    document.querySelector('body').classList.remove('paused');
+
+    this.lastStepTime = performance.now();  
+    // begin gameLoop - it calls itself using requestAnimationFrame which uses the time from
+    // performance.now() - so pass that here to start things off
+    this.gameLoop(performance.now());
   }
 
   // Do we need a new piece?
@@ -298,10 +340,16 @@ class Game {
   }
 
   spawnPiece() {
-    this.piece = this.pieceFactory.createPiece();
+    this.piece = Boolean(this.nextPiece) ? this.nextPiece : this.pieceFactory.createPiece();
+    this.nextPiece = this.pieceFactory.createPiece();
     this.paintPiece();
+    this.paintNextPiece();
   }
-
+  
+  /**
+   * A valid piece is one where all pixels within the piece
+   * can be spawned in bounds and not overlapping another piece
+   */
   isValidPiece(piece) {
     let valid = true;
 
@@ -364,6 +412,14 @@ class Game {
     }
 
     this.painter.paintPiece(this.piece);
+  }
+
+  paintNextPiece() {
+    if (!this.nextPiece) {
+      return;
+    }
+    this.painter.eraseInfoCanvas();
+    this.painter.paintNextPiece(this.nextPiece)
   }
 
   takeOwnershipOfPiece() {
@@ -445,11 +501,12 @@ class Game {
   }
 
   playTutorial() {
+    this.state = GAME_STATE.TUTORIAL;
     this.tutorial.play();
   }
 
   gameOver() {
-    this.pause();
+    this.stopGame();
     this.feedback.gameOver();
     this.revealStartButton();
   }

@@ -25,31 +25,49 @@
   </head>
 
   <body>
-    <canvas id="background-canvas"></canvas>
-    <canvas id="foreground-canvas"></canvas>
+    <div class='layout-wrapper'>
+      <div class='layout-left'>
+        <div class="divbutton centering-flex-wrapper" id="button-left">
+          <div class="divbutton-body unselectable-text">LEFT<br/>(&#x2190;&#xfe0e;)</div>
+        </div>
+    
+        <div class="divbutton centering-flex-wrapper" id="button-down">
+          <div class="divbutton-body unselectable-text">DOWN<br/>(&#x2193;&#xfe0e;)</div>
+        </div>
 
-    <div class="divbutton centering-flex-wrapper" id="button-left">
-      <div class="divbutton-body unselectable-text">LEFT<br/>(&#x2190;&#xfe0e;)</div>
-    </div>
+        <div class="divbutton centering-flex-wrapper" id="button-drop">
+          <div class="divbutton-body unselectable-text">DROP<br/>(SPACE)</div>
+        </div>
+      </div>
 
-    <div class="divbutton centering-flex-wrapper" id="button-right">
-      <div class="divbutton-body unselectable-text">RIGHT<br/>(&#x2192;&#xfe0e;)</div>
-    </div>
+      <div class='layout-center'>
+        <canvas id="background-canvas"></canvas>
+        <canvas id="foreground-canvas"></canvas>
+      </div>
 
-    <div class="divbutton centering-flex-wrapper" id="button-down">
-      <div class="divbutton-body unselectable-text">DOWN<br/>(&#x2193;&#xfe0e;)</div>
-    </div>
+      <div class='layout-right'>
+        <div class="divbutton centering-flex-wrapper" id="button-right">
+          <div class="divbutton-body unselectable-text">RIGHT<br/>(&#x2192;&#xfe0e;)</div>
+        </div>
+    
+        <div class="divbutton centering-flex-wrapper" id="button-rotate">
+          <div class="divbutton-body unselectable-text">ROTATE<br/>(&#x2191;&#xfe0e;)</div>
+        </div>
 
-    <div class="divbutton centering-flex-wrapper" id="button-drop">
-      <div class="divbutton-body unselectable-text">DROP<br/>(SPACE)</div>
+        <div class="divbutton centering-flex-wrapper" id="button-rotate">
+          <canvas id="info-canvas"></canvas>
+        </div>
+      </div>
     </div>
-
-    <div class="divbutton centering-flex-wrapper" id="button-rotate">
-      <div class="divbutton-body unselectable-text">ROTATE<br/>(&#x2191;&#xfe0e;)</div>
-    </div>
+    
+    
 
     <div class="centering-flex-wrapper" id="title-wrapper">
       <div id="title" class="unselectable-text">(N+1)Tris</div>
+    </div>
+
+    <div class="centering-flex-wrapper" id="pause-wrapper">
+      <blink id="pause" class="unselectable-text">Paused</blink>
     </div>
 
     <div class="centering-flex-wrapper" id="score-wrapper">

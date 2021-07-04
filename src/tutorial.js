@@ -14,7 +14,15 @@ class Tutorial {
     this.skipButton = this.registerSkipButton(htmlElements.tutorialSkipButton);
     this.processIds = [];
 
+    this.handleKeypress = this.handleKeypress.bind(this);
+
     this.callback = callback;
+  }
+
+  handleKeypress(event) {
+    if (event.code === 'Space') {
+      this.skipTutorial();
+    }
   }
 
   registerSkipButton(htmlElement) {
@@ -32,6 +40,8 @@ class Tutorial {
 
   play() {
     this.wrapper.classList.remove('hidden');
+
+    this.keyListener = document.addEventListener('keydown', this.handleKeypress);
 
     let totalTimeMs = 0;
 
@@ -57,6 +67,7 @@ class Tutorial {
   }
 
   complete() {
+    document.removeEventListener('keydown', this.handleKeypress);
     this.wrapper.classList.add('hidden');
     this.hasPlayed = true;
     this.callback();

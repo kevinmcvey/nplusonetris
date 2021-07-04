@@ -9,6 +9,7 @@ const GAME_RANK = 4;
 window.onload = () => {
   const backgroundCanvas = document.getElementById('background-canvas');
   const foregroundCanvas = document.getElementById('foreground-canvas');
+  const infoCanvas = document.getElementById('info-canvas');
 
   const title = document.getElementById('title');
   const score = document.getElementById('score');
@@ -30,7 +31,7 @@ window.onload = () => {
   const height = parseInt(userParams.get('height'), 10) || GAME_HEIGHT;
   const rank = parseInt(userParams.get('rank'), 10) || GAME_RANK;
 
-  const canvases = { backgroundCanvas, foregroundCanvas };
+  const canvases = { backgroundCanvas, foregroundCanvas, infoCanvas };
   const feedback = { title, score };
   const controls = { leftButton, rightButton, downButton, rotateButton, dropButton, startButton };
   const tutorial = { tutorialWrapper, tutorialSkipButton, tutorialText };
