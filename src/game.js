@@ -472,6 +472,10 @@ class Game {
 
   increaseComplexity() {
     this.pieceFactory.increaseRank();
+
+    // The next piece is now of the wrong rank. Clear it so that PieceFactory is forced to
+    // generate a new nextPiece on the next game step.
+    this.nextPiece = undefined;
   }
 
   updateScoreDisplay() {
