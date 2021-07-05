@@ -23,3 +23,9 @@ Open up `index.html` in a web browser to see the game.
 
 If you're doing some heavier development, try `npm run build:watch`. It will re-build the project on file saves
 and allow you to have quicker feedback in the browser. Refresh the browser page to see the new build.
+
+### Shoutouts
+
+Many thanks to [Will Simons](https://github.com/bigredwill) for contributions. <3
+
+PRs welcome!

@@ -1,6 +1,6 @@
 'use strict';
 
-const TUTORIAL_MESSAGE_HOLD_MS = [2000, 3000, 4000, 5000, 3000];
+const TUTORIAL_MESSAGE_HOLD_MS = [0, 2000, 3000, 4000, 5000, 3000];
 
 const DivButton = require('./divbutton');
 
