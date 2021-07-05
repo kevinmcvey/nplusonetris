@@ -1,8 +1,9 @@
 'use strict';
 
 // Keep these values larger than the button width and title height in style.css
-const X_BUFFER_PERCENT = 20;
+const X_BUFFER_PERCENT = 10;
 const Y_PADDING = 50;
+const PREVIEW_BUFFER_PERCENT = 20;
 
 const CANVAS = {
   FOREGROUND: 'FOREGROUND',
@@ -107,8 +108,8 @@ class BoardPainter {
   infoBoardToWorld(dimensions, pixel) {
     const canvas = this.canvas(CANVAS.INFO);
 
-    const canvasPaddingX = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
-    const canvasPaddingY = canvas.parentElement.clientHeight * (X_BUFFER_PERCENT / 100);
+    const canvasPaddingX = canvas.parentElement.clientWidth * (PREVIEW_BUFFER_PERCENT / 100);
+    const canvasPaddingY = canvas.parentElement.clientHeight * (PREVIEW_BUFFER_PERCENT / 100);
 
     const maxBoardWidth = canvas.parentElement.clientWidth - (canvasPaddingX * 2);
     const maxBoardHeight = canvas.parentElement.clientHeight - (canvasPaddingY * 2);

@@ -244,8 +244,9 @@ canvas {
 
 #info-canvas {
     position: absolute;
-    top: 15%;
+    top: 0px;
     left: 0px;
-    height: 85%;
+    height: 100%;
+    width: 100%;
     z-index: 1;
 }
