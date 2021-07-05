@@ -266,6 +266,7 @@ class BoardPainter {
       const rect = this.infoBoardToWorld(dimensions, pixel);
       ctx.fillStyle = this.getColor(piece.pixels[pixelY][pixelX]);
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+      ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
       return true;
     });
   }
