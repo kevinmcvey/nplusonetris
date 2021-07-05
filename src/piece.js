@@ -4,8 +4,24 @@ class Piece {
   constructor(x, y, pixels, rank) {
     this.x = x;
     this.y = y;
-    this.pixels = pixels;
     this.rank = rank;
+
+    // Pieces are always square matrices (width = height) of size <= rank. Originally this choice
+    // was intended to make it easy to specify the center of rotation for each piece.
+    //
+    // In hindsight this decision is pretty goofy. For some pieces you may end up with
+    // multiple empty rows and columns that only serve the purpose of speeding up an already fast
+    // rotation. This is probably more cumbersome than storing the center of rotation as a point
+    // would have been. Oh well, not like this is going to the moon. :)
+    //
+    // Colors are specified by number in the matrix and are looked up in BoardPainter. An example
+    // piece is as follows:
+    //
+    // [[0, 4, 0],
+    //  [4, 4, 4],
+    //  [0, 0, 0]]
+    //      ^ A tetris 't' block with the point upward. Center of rotation is [1, 1]
+    this.pixels = pixels;
   }
 
   moveLeft() {
