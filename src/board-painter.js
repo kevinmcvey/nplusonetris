@@ -104,32 +104,38 @@ class BoardPainter {
     };
   }
 
-  /**
-   * todo: center entire piece in info view
-   */
-  infoBoardToWorld(pixel) {
+  infoBoardToWorld(dimensions, pixel) {
     const canvas = this.canvas(CANVAS.INFO);
-    const x_padding = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
-    const y_padding = canvas.parentElement.clientHeight * (X_BUFFER_PERCENT / 100);
 
-    const maxBoardWidth = canvas.parentElement.clientWidth - (x_padding * 2);
-    const maxBoardHeight = canvas.parentElement.clientHeight - (y_padding * 2);
+    const canvasPaddingX = canvas.parentElement.clientWidth * (X_BUFFER_PERCENT / 100);
+    const canvasPaddingY = canvas.parentElement.clientHeight * (X_BUFFER_PERCENT / 100);
 
-    let boardX;
-    let boardY;
+    const maxBoardWidth = canvas.parentElement.clientWidth - (canvasPaddingX * 2);
+    const maxBoardHeight = canvas.parentElement.clientHeight - (canvasPaddingY * 2);
 
-    const scaledSquareSize = maxBoardWidth / this.columns;
-  
-    const squareSize = scaledSquareSize < this.squareSize ? scaledSquareSize : this.squareSize;
+    const maxSquareWidth = maxBoardWidth / dimensions.width;
+    const maxSquareHeight = maxBoardHeight / dimensions.height;
 
-    // debugger;
+    // Preview squares should be drawn at the smaller of two options:
+    //   1. Whatever fits in the canvas
+    //   2. Whatever the square size on the main game board is
+    //
+    // Case 1 is important for high-rank pieces that, at ordinary game size, will cause a draw
+    // outside of the canvas.
+    //
+    // Case 2 is important for low-rank pieces that, when scaled to fit the canvas, appear large
+    // and distracting.
+    const squareSize = Math.min(maxSquareWidth, maxSquareHeight, this.squareSize);
+
+    const paddingLeft = (canvas.parentElement.clientWidth - (squareSize * dimensions.width)) / 2;
+    const paddingTop = (canvas.parentElement.clientHeight - (squareSize * dimensions.height)) / 2;
+
     return {
-      x: x_padding + (pixel.x * squareSize),
-      y: y_padding + (pixel.y * squareSize),
+      x: paddingLeft + ((pixel.x - dimensions.topLeft.x) * squareSize),
+      y: paddingTop + ((pixel.y - dimensions.topLeft.y) * squareSize),
       width: squareSize,
-      height: squareSize
-    }
-
+      height: squareSize,
+    };
   }
 
   pixelToWorldRect(pixel) {
@@ -187,6 +193,28 @@ class BoardPainter {
     }
   }
 
+  getPieceDimensions(pixels) {
+    if (!pixels) {
+      return;
+    }
+
+    const topLeft = { x: Infinity, y: Infinity };
+    const bottomRight = { x: -1, y: -1 };
+
+    this.forActivePixels(pixels, (pixelX, pixelY) => {
+      topLeft.x = Math.min(topLeft.x, pixelX);
+      topLeft.y = Math.min(topLeft.y, pixelY);
+      bottomRight.x = Math.max(bottomRight.x, pixelX);
+      bottomRight.y = Math.max(bottomRight.y, pixelY);
+      return true;
+    });
+
+    const width = (bottomRight.x - topLeft.x) + 1;
+    const height = (bottomRight.y - topLeft.y) + 1;
+
+    return { topLeft, bottomRight, width, height };
+  }
+
   erasePixels(grid, startX, startY, canvasName = CANVAS.FOREGROUND) {
     const ctx = this.context(canvasName);
 
@@ -230,8 +258,12 @@ class BoardPainter {
   paintNextPiece(piece) {
     const ctx = this.context(CANVAS.INFO);
 
+    const dimensions = this.getPieceDimensions(piece.pixels);
+
     this.forActivePixels(piece.pixels, (pixelX, pixelY) => {
-      const rect = this.infoBoardToWorld({ x: piece.x + pixelX, y: piece.y + pixelY }, piece.rank);
+      const pixel = { x: pixelX, y: pixelY };
+
+      const rect = this.infoBoardToWorld(dimensions, pixel);
       ctx.fillStyle = this.getColor(piece.pixels[pixelY][pixelX]);
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       return true;
